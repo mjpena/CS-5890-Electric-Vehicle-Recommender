@@ -11,7 +11,7 @@ max_delta_e = 4
 V = [0]*40
 
 for i in range(0,40):
-        V[i]=[0]*72
+        V[i]=[i]*72
         
         
 print ("ZERIN YOU GOT THIS")
@@ -35,43 +35,36 @@ def action(eBatt, time, delta_e):
         
 
 # returns reward at given state and action 
-def reward(state, action):
+def reward(state,action):
+        reward =0
         curr_eBatt, curr_time = state
         next_eBatt= action
-
         #if overcharging occur, negative reward
         if(next_eBatt > eBatt_capacity):
-                return -100
-
-        # no charging occurs, no reward
+                return -100000
+                # no charging occurs, no reward
         if(curr_eBatt >= next_eBatt):
                 return 0
-
-
-        # day is split up into 72(24*3) sections or 20 minute intervals so divide back into just hours
+        
+                # day is split up into 72(24*3) sections or 20 minute intervals so divide back into just hours
         curr_hours = curr_time / 3
         next_hours = (curr_time+1) / 3
-
         for time in range(math.floor(curr_hours), math.floor(next_hours)):
                # off_peak_price = 0.016334
                # on_peak_price = 0.043560
-                off_peak_price=2
-                on_peak_price=1 
-                best_price=1
+                off_peak_price = 16334
+                on_peak_price = 43560
                 best_price = abs(curr_hours-next_hours) * off_peak_price
-                actual_price = 0  
+                actual_price = 0 
 
                 # 1pm to 8pm is onpeak, any other time is off peak; not taking into account weekends or holidays
                 if(time >= 13 & time <= 20):
                         actual_price += on_peak_price
                 else:
                         actual_price += off_peak_price
-                
                 reward = math.floor(abs(best_price - actual_price))
-
-                return reward
-
-                
+        return reward
+         
 
 def x():
         return 1
@@ -90,13 +83,12 @@ def value_function():
                                     break
                             if(v_time>71):
                                     break
-                            #best = max(best,reward((eBatt, time), delta_e)+ V[v_eBatt][v_time])
-                            best = max(best,x()+ V[v_eBatt][v_time])
+                            best = max(best,reward((eBatt, time), delta_e)+ V[v_eBatt][v_time])
+                            #best = max(best,x()+ V[v_eBatt][v_time])
                             print ('best', x()+delta_e,best)
                             max_error = max(max_error, abs(value-best))
                             if(max_delta_e+1>40):
                                     break
                             #print(max_error)
 
-value_function()      
-
+value_function()  
