@@ -5,11 +5,20 @@
 import math
 # battery size and max charging rate of a nissan leaf
 eBatt_capacity = 40
-max_delta_e = 40
-
+level1=4
+level2=22
+def max_delta_e(fullnes):
+       if(fullnes/eBatt_capacity<.60):
+               return math.floor((level1*2)/3)
+       return math.floor(level1/3)
 # dictionary holding all possible states
-V = [[40],[72]]
+V = [0]*40
 
+for i in range(0,40):
+        V[i]=[i]*72
+        
+        
+#print (V[39][70])
 '''
 V = {}
 for time in range(0, 2):
@@ -29,53 +38,60 @@ def action(eBatt, time, delta_e):
         
 
 # returns reward at given state and action 
-def reward(state, action):
+def reward(state,action):
+        reward =0
         curr_eBatt, curr_time = state
         next_eBatt= action
-
         #if overcharging occur, negative reward
         if(next_eBatt > eBatt_capacity):
-                return -100
-
-        # no charging occurs, no reward
+                return -100000
+                # no charging occurs, no reward
         if(curr_eBatt >= next_eBatt):
                 return 0
-
-
-        # day is split up into 72(24*3) sections or 20 minute intervals so divide back into just hours
+        
+                # day is split up into 72(24*3) sections or 20 minute intervals so divide back into just hours
         curr_hours = curr_time / 3
         next_hours = (curr_time+1) / 3
-
         for time in range(math.floor(curr_hours), math.floor(next_hours)):
-                off_peak_price = 0.016334
-                on_peak_price = 0.043560
+               # off_peak_price = 0.016334
+               # on_peak_price = 0.043560
+                off_peak_price = 16334
+                on_peak_price = 43560
                 best_price = abs(curr_hours-next_hours) * off_peak_price
-                actual_price = 0  
+                actual_price = 0 
 
                 # 1pm to 8pm is onpeak, any other time is off peak; not taking into account weekends or holidays
                 if(time >= 13 & time <= 20):
                         actual_price += on_peak_price
                 else:
                         actual_price += off_peak_price
-                
-                reward = abs(best_price - actual_price)
+                reward = math.floor(abs(best_price - actual_price))
+        return reward
+         
 
-                return reward
-
-                
-
-
+def x():
+        return 1
 
 # fills state dictionary with associated reward 
-def value_function(eBatt, time, delta_e):
+def value_function():
         max_error = 0
         for time in range(0, 24*3):
             for eBatt in range(0, eBatt_capacity):
                     value = V[eBatt][time]
+                    #print (value)
                     best = -100
-                    for delta_e in range(0, max_delta_e + 1):
+                    for delta_e in range(0, max_delta_e(value) + 1):
                             v_eBatt, v_time = action(eBatt, time, delta_e)
-                            best = max(best, reward((eBatt, time), delta_e)+ V[v_eBatt][v_time])
+                            if(v_eBatt>36):
+                                    break
+                            if(v_time>71):
+                                    break
+                            best = max(best,reward((eBatt, time), delta_e)+ V[v_eBatt][v_time])
+                            #best = max(best,x()+ V[v_eBatt][v_time])
+                            print ('best', x()+delta_e,best)
                             max_error = max(max_error, abs(value-best))
 
-value_function(1,1,1)      
+value_function()      
+
+
+     
