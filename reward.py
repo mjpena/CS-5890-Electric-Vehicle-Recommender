@@ -5,8 +5,12 @@
 import math
 # battery size and max charging rate of a nissan leaf
 eBatt_capacity = 40
-max_delta_e = 4
-
+level1=4
+level2=22
+def max_delta_e(fullnes):
+       if(fullnes/eBatt_capacity<.60):
+               return math.floor((level1*2)/3)
+       return math.floor(level1/3)
 # dictionary holding all possible states
 V = [0]*40
 
@@ -14,7 +18,6 @@ for i in range(0,40):
         V[i]=[i]*72
         
         
-print ("ZERIN YOU GOT THIS")
 #print (V[39][70])
 '''
 V = {}
@@ -77,7 +80,7 @@ def value_function():
                     value = V[eBatt][time]
                     #print (value)
                     best = -100
-                    for delta_e in range(0, max_delta_e + 1):
+                    for delta_e in range(0, max_delta_e(value) + 1):
                             v_eBatt, v_time = action(eBatt, time, delta_e)
                             if(v_eBatt>36):
                                     break
@@ -87,8 +90,8 @@ def value_function():
                             #best = max(best,x()+ V[v_eBatt][v_time])
                             print ('best', x()+delta_e,best)
                             max_error = max(max_error, abs(value-best))
-                            if(max_delta_e+1>40):
-                                    break
-                            #print(max_error)
 
-value_function()  
+value_function()      
+
+
+
