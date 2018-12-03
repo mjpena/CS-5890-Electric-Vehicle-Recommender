@@ -24,31 +24,40 @@ def action(eBatt, time, delta_e):
         return s_prime
         
 
-# returns 
+# returns reward at given state and action 
 def reward(state, action):
         curr_eBatt, curr_time = state
         next_eBatt, next_time = action
-
-        # no charging occurs, no reward
-        if(curr_eBatt >= next_eBatt):
-                return 0
 
         #if overcharging occur, negative reward
         if(next_eBatt > eBatt_capacity):
                 return -100
 
+        # no charging occurs, no reward
+        if(curr_eBatt >= next_eBatt):
+                return 0
+
+
         # day is split up into 72(24*3) sections or 20 minute intervals so divide back into just hours
         curr_hours = curr_time / 3
-        next_hours = next_time /3
-        # hours_charging = abs(curr_hours - next_hours)
-        price = 0.0
+        next_hours = next_time / 3
 
-        for time in range(curr_hours, next_hours):          
+        for time in range(curr_hours, next_hours):
+                off_peak_price = 0.016334
+                on_peak_price = 0.043560
+                best_price = abs(curr_hours-next_hours) * off_peak_price
+                actual_price = 0  
+
                 # 1pm to 8pm is onpeak, any other time is off peak; not taking into account weekends or holidays
                 if(time >= 13 & time <= 20):
-                        price = price + 0.043560
+                        actual_price += on_peak_price
                 else:
-                                price = price + 0.016334
+                        actual_price += off_peak_price
+                
+                reward = abs(best_price - actual_price)
+
+                return reward
+
                 
 
 
