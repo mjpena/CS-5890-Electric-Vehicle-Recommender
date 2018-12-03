@@ -5,11 +5,17 @@
 import math
 # battery size and max charging rate of a nissan leaf
 eBatt_capacity = 40
-max_delta_e = 40
+max_delta_e = 4
 
 # dictionary holding all possible states
-V = [[40],[72]]
+V = [0]*40
 
+for i in range(0,40):
+        V[i]=[0]*72
+        
+        
+print ("ZERIN YOU GOT THIS")
+#print (V[39][70])
 '''
 V = {}
 for time in range(0, 2):
@@ -47,8 +53,11 @@ def reward(state, action):
         next_hours = (curr_time+1) / 3
 
         for time in range(math.floor(curr_hours), math.floor(next_hours)):
-                off_peak_price = 0.016334
-                on_peak_price = 0.043560
+               # off_peak_price = 0.016334
+               # on_peak_price = 0.043560
+                off_peak_price=2
+                on_peak_price=1 
+                best_price=1
                 best_price = abs(curr_hours-next_hours) * off_peak_price
                 actual_price = 0  
 
@@ -58,24 +67,36 @@ def reward(state, action):
                 else:
                         actual_price += off_peak_price
                 
-                reward = abs(best_price - actual_price)
+                reward = math.floor(abs(best_price - actual_price))
 
                 return reward
 
                 
 
-
+def x():
+        return 1
 
 # fills state dictionary with associated reward 
-def value_function(eBatt, time, delta_e):
+def value_function():
         max_error = 0
         for time in range(0, 24*3):
             for eBatt in range(0, eBatt_capacity):
                     value = V[eBatt][time]
+                    #print (value)
                     best = -100
                     for delta_e in range(0, max_delta_e + 1):
                             v_eBatt, v_time = action(eBatt, time, delta_e)
-                            best = max(best, reward((eBatt, time), delta_e)+ V[v_eBatt][v_time])
+                            if(v_eBatt>36):
+                                    break
+                            if(v_time>71):
+                                    break
+                            #best = max(best,reward((eBatt, time), delta_e)+ V[v_eBatt][v_time])
+                            best = max(best,x()+ V[v_eBatt][v_time])
+                            print ('best', x()+delta_e,best)
                             max_error = max(max_error, abs(value-best))
+                            if(max_delta_e+1>40):
+                                    break
+                            #print(max_error)
 
-value_function(1,1,1)      
+value_function()      
+
