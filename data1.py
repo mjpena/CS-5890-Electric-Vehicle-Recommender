@@ -32,7 +32,7 @@ ld['datetime'] = ld.timestampMs.map(datetime.datetime.fromtimestamp)
 ld.rename(columns={'latitudeE7':'latitude', 'longitudeE7':'longitude', 'timestampMs':'timestamp'}, inplace=True)
 ld = ld[ld.accuracy < 1000] #Ignore locations with accuracy estimates over 1000m
 ld.reset_index(drop=True, inplace=True) 
-
+#function draws a graph for charged data
 def plotDatcharge(ld):
     x=[]
     y=[]
@@ -50,6 +50,7 @@ def plotDatcharge(ld):
     plt.ylabel('time available for charging by percent of day')
     plt.xlabel('Days October 2016')
     plt.show()
+    #function draws kwh graphs
 def plotDataKwh(ld):
     x=[]
     y=[]
@@ -66,7 +67,7 @@ def plotDataKwh(ld):
     plt.ylabel('kwh used per day')
     plt.xlabel('Days October 2016')
     plt.show()
-    
+    #function trims the list to only look at specific time
 def timeRange(x,y,ld):
     ld = ld[ld.datetime>datetime.datetime(2016,10,x)]
     ld = ld[ld.datetime<datetime.datetime(2016,10,y)]
@@ -86,7 +87,7 @@ ld['speed'] = ld.distance/(ld.timestamp - ld.timestamp.shift(-1))*3600 #km/hr
 #def getConvert
 #returns an array of all the time you are at home
 
-
+#trims the array to just time at home
 def timeAtHome(ld):
  
     chargeable = ld[ld.speed<5]
@@ -97,6 +98,7 @@ def timeAtHome(ld):
     home=chargeable[abs(chargeable.latitude-HOMELOCATION.latitude)<.05]
     #print(home['datetime'])
     return home
+#calculates th toatal of the charge rate
 def chargeToats(ld):
     toats=1
     for y in ld['datetime']:
@@ -131,6 +133,7 @@ ld=ld[ld.datetime<datetime.datetime(2016,10,2,2)]
 calcEnergy(ld)
 '''
     #print(home['datetime'])
+    #used to breack a day into twenty minute inervals
 def convertToTwenty(ld,i,z):
      x=calcEnergy(ld)
      z.append(x)
@@ -144,6 +147,7 @@ def convertToTwenty(ld,i,z):
 for i in ld['datetime']:
     print (i.minute)
 '''
+calculates the amount used per hour
 def storeUse():
     z=[]
     #state={"EVbat",time}
