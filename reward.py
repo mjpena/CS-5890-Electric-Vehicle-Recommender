@@ -29,7 +29,7 @@ def action(eBatt, time, delta_e):
         return s_prime
 
 # returns cost of energy at given time of day
-tod_price = [0]*72
+tod_price = [0]*24
 for i in range(0, len(tod_price)):
         if(i >= 13*3 and i<= 20*3):
                 tod_price[i] = 0.043560
@@ -46,7 +46,6 @@ def reward(state, action):
         price = tod_price[hour%24] * delta_e
         return price
 
-print(reward((10, 3), 3))
 
 """
 def reward_old(state,action):
