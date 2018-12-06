@@ -65,8 +65,14 @@ for i in range(0, len(tod_price)):
 
 # returns reward at given state and action 
 def reward(state, action):
+        
         eBatt, time = state
         delta_e = action
+       # print(dayCh[time])
+        if(dayCh[time]==0.0):
+                #print('*****************************')
+                return 0
+        
         # start_hour being when the entire trip starts?
         hour = int(start_time + (time/3))
         price = tod_price[hour % 24] * delta_e
@@ -100,22 +106,18 @@ def value_function():
                                 #print (value)
                                 max_error =  max(max_error, abs(value-best))
                                 V[eBatt][time]=best
-                                print(max_error)
+                               # print(max_error)
                 
 
 #home =data1.storecharge()
 #print(home)
 trip=data1.storeUse()
 home = 18
-        
+dayCh=data1.storecharge()   
 
-#termReward(18)
+termReward(18)
 #print(V)
 value_function()   
 #print(V)
 #V[1][1]= action(1,1,1))   
 #print(V)
-
-
-
-
