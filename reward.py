@@ -3,7 +3,7 @@
 # ontario data: https://www.powerstream.ca/customers/rates-support-programs/time-of-use-pricing.html
 # charging data: https://pushevs.com/2018/05/21/fast-charging-curves/
 import math
-import data1
+# import data1
 # battery size and max charging rate of a nissan leaf
 eBatt_capacity = 40
 level1=4
@@ -14,7 +14,6 @@ def max_delta_e(fullnes):
        return math.floor(level1/3)
 # dictionary holding all possible states
 V = [0]*40
-
 for i in range(0,40):
         V[i]=[i]*72
 
@@ -28,10 +27,29 @@ def action(eBatt, time, delta_e):
         s_prime = (new_ebatt, time)
         #day[eBatt][time]=new_ebatt
         return s_prime
-        
+
+# returns cost of energy at given time of day
+tod_price = [0]*72
+for i in range(0, len(tod_price)):
+        if(i >= 13*3 and i<= 20*3):
+                tod_price[i] = 0.043560
+        else:
+                tod_price[i] = 0.016334
+
 
 # returns reward at given state and action 
-def reward(state,action):
+def reward(state, action):
+        eBatt, time = state
+        delta_e = action
+        # start_hour being when the entire trip starts?
+        hour = int(1 + (time/3))
+        price = tod_price[hour%24] * delta_e
+        return price
+
+print(reward((10, 3), 3))
+
+"""
+def reward_old(state,action):
         reward =0
         curr_eBatt, curr_time = state
         next_eBatt= action + curr_eBatt
@@ -66,7 +84,7 @@ def reward(state,action):
                 reward = math.floor(abs(best_price - actual_price))
         #print ('reward',reward)
         return reward
-         
+"""         
 
 # fills state dictionary with associated reward 
 def value_function():
@@ -82,13 +100,13 @@ def value_function():
                                 #print (value)
                                 best = -100
                                 
-                                for delta_e in range(0, max_delta_e(value) + 1):
+                                # for delta_e in range(0, max_delta_e)
+                                for delta_e in range(0, eBatt_capacity - eBatt):
                                         v_eBatt, v_time = action(eBatt, time, delta_e)
                                         if(v_eBatt>39):
                                                 break
                                         if(v_time>71):
                                                 break
-                                        
                                         best = max(best,reward((eBatt, time), delta_e)+ V[v_eBatt][v_time])
                                         
                                          #abs(best)
@@ -99,16 +117,16 @@ def value_function():
                                 print(max_error)
                 
 
-home =data1.storecharge()
+#home =data1.storecharge()
 #print(home)
-trip=data1.storeUse()
-day =[10]*40
-for i in range(0,40):
-        day[i]=[trip[i]*-1]*72
+#trip=data1.storeUse()
+#day =[10]*40
+#for i in range(0,40):
+#        day[i]=[trip[i]*-1]*72
         
 
 
-value_function()   
+#value_function()   
 #V[1][1]= action(1,1,1))   
 #print(V)
 
