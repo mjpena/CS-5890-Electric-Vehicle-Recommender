@@ -68,7 +68,6 @@ def reward(state, action):
                 time = time-NIGHT_TIME_SECTIONS
         hour = int(start_time + (time/3))
         price = tod_price[hour % 24] * delta_e
-        price-=.001
         return price
 
          
