@@ -11,13 +11,30 @@ from descartes import PolygonPatch
 import json
 import datetime
 from itertools import takewhile
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+#from mpl_toolkits.basemap import Basemap
+#from shapely.geometry import Point, Polygon, MultiPoint, MultiPolygon
+#from shapely.prepared import prep
+#import fiona
+from geopy.geocoders import Nominatim
+from matplotlib.collections import PatchCollection
+from descartes import PolygonPatch
+import json
+import datetime
+from itertools import takewhile
 import math
 import collections
 #Location storage
+MONTH=11
+YEAR = 2016
 FILENAME='LocationHistory.json'
 ADDRESS = '649 E 800 N Logan UT'
 geolocator = Nominatim(user_agent="specify_your_app_name_here")
-HOMELOCATION = geolocator.geocode(ADDRESS)
+HOMELOCATION = geolocator.geocode(ADDRESS,timeout=10)
+#HOMELAT = 41.7465082331669
+#print (HOMELOCATION.latitude)
 
 with open(FILENAME, 'r') as fh:
     raw = json.loads(fh.read())
@@ -32,11 +49,11 @@ ld['datetime'] = ld.timestampMs.map(datetime.datetime.fromtimestamp)
 ld.rename(columns={'latitudeE7':'latitude', 'longitudeE7':'longitude', 'timestampMs':'timestamp'}, inplace=True)
 ld = ld[ld.accuracy < 1000] #Ignore locations with accuracy estimates over 1000m
 ld.reset_index(drop=True, inplace=True) 
-#function draws a graph for charged data
+
 def plotDatcharge(ld):
     x=[]
     y=[]
-    for i in range(1,31):
+    for i in range(1,30):
        # print(i)
         y.append(i)
         point = timeRange(i,i+1,ld)
@@ -50,7 +67,6 @@ def plotDatcharge(ld):
     plt.ylabel('time available for charging by percent of day')
     plt.xlabel('Days October 2016')
     plt.show()
-    #function draws kwh graphs
 def plotDataKwh(ld):
     x=[]
     y=[]
@@ -67,10 +83,10 @@ def plotDataKwh(ld):
     plt.ylabel('kwh used per day')
     plt.xlabel('Days October 2016')
     plt.show()
-    #function trims the list to only look at specific time
+    
 def timeRange(x,y,ld):
-    ld = ld[ld.datetime>datetime.datetime(2016,10,x)]
-    ld = ld[ld.datetime<datetime.datetime(2016,10,y)]
+    ld = ld[ld.datetime>datetime.datetime(YEAR,MONTH,x)]
+    ld = ld[ld.datetime<datetime.datetime(YEAR,MONTH,y)]
     return ld
 #ld = timeRange(11,12,ld)
 #print (np.cos(1))
@@ -87,7 +103,7 @@ ld['speed'] = ld.distance/(ld.timestamp - ld.timestamp.shift(-1))*3600 #km/hr
 #def getConvert
 #returns an array of all the time you are at home
 
-#trims the array to just time at home
+
 def timeAtHome(ld):
  
     chargeable = ld[ld.speed<5]
@@ -95,10 +111,10 @@ def timeAtHome(ld):
     chargeable = chargeable[chargeable.longitude==chargeable.longitude.shift(-1)]
     #score= collections.Counter((chargeable['latitude']))
     #THING TO FIX probably won't work if you drive around the equator 
-    home=chargeable[abs(chargeable.latitude-HOMELOCATION.latitude)<.05]
+    home=chargeable[abs(chargeable.latitude-HOMELOCATION.latitude)<3]
+    #home=chargeable[abs(chargeable.latitude-HOMELAT)<3]
     #print(home['datetime'])
     return home
-#calculates th toatal of the charge rate
 def chargeToats(ld):
     toats=1
     for y in ld['datetime']:
@@ -133,7 +149,6 @@ ld=ld[ld.datetime<datetime.datetime(2016,10,2,2)]
 calcEnergy(ld)
 '''
     #print(home['datetime'])
-    #used to breack a day into twenty minute inervals
 def convertToTwenty(ld,i,z):
      x=calcEnergy(ld)
      z.append(x)
@@ -147,30 +162,22 @@ def convertToTwenty(ld,i,z):
 for i in ld['datetime']:
     print (i.minute)
 '''
-calculates the amount used per hour
 def storeUse():
     z=[]
     #state={"EVbat",time}
-    for x in range(1,24):
-    
-        a=x-1
-        ldi=ld[ld.datetime<datetime.datetime(2016,10,14,x)]
-        ldi=ldi[ldi.datetime>datetime.datetime(2016,10,14,a)]
-        r = calcEnergy(ldi)
-        z.append(r/3)
-        z.append(r/3)
-        z.append(r/3)
-    z.append(0)
-    z.append(0)
-    z.append(0)
+    i=14
+    point = timeRange(i,i+1,ld)
+    # print(point[point.datetime.Length])
+    z.append((calcEnergy(point)))
+    print (z[0])
     return (z)
 #print (z)
-def storecharge():
+def storePrevCharge():
     w=[]
     for x in range(1,24):
         a=x-1
-        ldi=ld[ld.datetime<datetime.datetime(2016,10,14,x)]
-        ldi=ldi[ldi.datetime>datetime.datetime(2016,10,14,a)]
+        ldi=ld[ld.datetime<datetime.datetime(YEAR,MONTH,14,x)]
+        ldi=ldi[ldi.datetime>datetime.datetime(YEAR,MONTH,14,a)]
         r = chargeToats(ldi)
         w.append(r)
         w.append(r)
@@ -178,9 +185,45 @@ def storecharge():
     w.append(0)
     w.append(0)
     w.append(0)
-        #print(x)
+    return(w)
+def storecharge():
+    w=[]
+    for x in range(1,24):
+        a=x-1
+        ldi=ld[ld.datetime<datetime.datetime(YEAR,MONTH,15,x)]
+        ldi=ldi[ldi.datetime>datetime.datetime(YEAR,MONTH,15,a)]
+        r = chargeToats(ldi)
+        w.append(r)
+        w.append(r)
+        w.append(r)
+    w.append(0)
+    w.append(0)
+    w.append(0)
+    
+   # print('chargePoint',w)
     return (w) 
+def findPrevTime(x):
+    
+    for i in range(51,71):
+        if (x[i]==0):
+            #print (x)
+            #print (i)
+            
+            return i+6
+    return -1
+def findTime(x):
+    
+    for i in range(15,72):
+        if (x[i]==0):
+            #print (x)
+            #print (i)
+            
+            return i+6
+    return -1
+#print(findTime(storecharge()))
 
+
+#findPrevTime(storePrevCharge()))
 #plotDatcharge(ld)
 #plotDataKwh(ld)
 #print (chargeable['latitude'])
