@@ -7,4 +7,6 @@ Data to Calculate:
 	charging rate of a vehicle
 	charging station availability for given location
 	money save on using electric vehicle vs gas vehicle over x time period
+	Data pulled fom phone location history
+	and run through a q learning algorithm 
 	
